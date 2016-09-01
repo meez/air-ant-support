@@ -1,0 +1,83 @@
+<project name="air-signing" basedir=".">
+
+<!-- Android -->
+
+<!-- Signing -->
+<target name="warn-if-tracing" if="using.tracing">
+    <echo message="*********************************"/>
+    <echo message="WARNING: TRACING IS SET TO TRUE"/>
+    <echo message="*********************************"/>
+</target>
+
+<target name="android-auth-develop" unless="auth.release">
+    <echo message="Using DEVELOPMENT keystore"/>
+    <property name="android.auth.keystore" value="${android.dev.keystore}"/>
+    <property name="android.auth.keystoreType" value="${android.dev.keystoreType}"/>
+    <property name="android.auth.storepass" value="${android.dev.keystorePass}"/>
+</target>
+
+<target name="android-auth-release" if="auth.release">
+    <echo message="** Using RELEASE keystore **"/>
+
+    <!-- check if CONFIG::tracing has been set -->
+    <condition property="using.tracing">
+        <istrue value="${compile.tracing}"/>
+    </condition>
+    <antcall target="warn-if-tracing"/>
+
+    <property name="android.auth.keystore" value="${android.release.keystore}"/>
+    <property name="android.auth.keystoreType" value="${android.release.keystoreType}"/>
+    <input message="Android KeyStore Password" addproperty="android.auth.storepass">
+        <handler type="secure"/>
+    </input>
+</target>
+
+<target name="android-auth" depends="android-auth-develop,android-auth-release">
+    <property name="android.sign.args" value="-keystore ${android.auth.keystore} -storetype ${android.auth.keystoreType} -storepass ${android.auth.storepass} -keypass ${android.auth.storepass}"/>
+</target>
+
+<!-- Deploy -->
+<macrodef name="android-deploy">
+    <attribute name="package"/>
+    <sequential>
+        <exec executable="${android.sdk.home}/platform-tools/adb${exe}" failonerror="true">
+            <arg value='install'/>
+            <arg line='-r @{package}'/>
+        </exec>
+    </sequential>
+</macrodef>
+
+<!-- IOS -->
+
+<!-- Signing -->
+
+<target name="ios-auth-develop" unless="auth.release">
+    <property name="ios.auth.provisioningProfile" value="${ios.dev.provisioningProfile}"/>
+    <property name="ios.auth.keystore" value="${ios.dev.certificate}"/>
+    <property name="ios.auth.keystoreType" value="pkcs12"/>
+    <input message="IOS Store Password" addproperty="ios.auth.storepass">
+        <handler type="secure"/>
+    </input>
+    <property name="ios.sign.args" value="-keystore ${ios.auth.keystore} -storetype ${ios.auth.keystoreType} -storepass ${ios.auth.storepass} -provisioning-profile ${ios.auth.provisioningProfile}"/>
+</target>
+
+<target name="ios-auth-release" if="auth.release">
+    <!-- check if CONFIG::tracing has been set -->
+    <condition property="using.tracing">
+        <istrue value="${compile.tracing}"/>
+    </condition>
+    <antcall target="warn-if-tracing"/>
+
+    <property name="ios.auth.provisioningProfile" value="${ios.release.provisioningProfile}"/>
+    <property name="ios.auth.keystore" value="${ios.release.certificate}"/>
+    <property name="ios.auth.keystoreType" value="pkcs12"/>
+    <input message="IOS Store Password" addproperty="ios.auth.storepass">
+        <handler type="secure"/>
+    </input>
+</target>
+
+<target name="ios-auth" depends="ios-auth-develop,ios-auth-release">
+    <property name="ios.sign.args" value="-keystore ${ios.auth.keystore} -storetype ${ios.auth.keystoreType} -storepass ${ios.auth.storepass} -provisioning-profile ${ios.auth.provisioningProfile}"/>
+</target>
+
+</project>

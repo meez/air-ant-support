@@ -94,9 +94,8 @@
         <exec executable="@{sdkPath}/bin/compc${bat}" failonerror="true">
             <arg value='-load-config+=@{configXML}'/>
             <arg line='-include-sources ${compile.path}'/>
-            <arg value='-strict'/>
-            <arg value='-debug=@{debug}'/>
             <extra-args/>
+            <arg value='-debug=@{debug}'/>
             <arg value="+configname=@{sdkConfig}"/>
             <arg line='-o @{output}'/>
         </exec>
@@ -207,6 +206,24 @@
             <arg value='@{approot}'/>
             <extra-args/>
             <arg line='-- "@{screensize}"'/>
+        </exec>
+    </sequential>
+</macrodef>
+
+<!-- Run -->
+<macrodef name="adl-desktop">
+    <attribute name="profile" default="desktop"/>
+    <attribute name="descriptor"/>
+    <attribute name="approot"/>
+    <attribute name="sdkPath" default="${air.sdk.home}"/>
+    <attribute name="failOnError" default="true"/>
+    <element name="extra-args" implicit="yes"/>
+    <sequential>
+        <exec executable="@{sdkPath}/bin/adl${exe}" failonerror="@{failOnError}">
+            <arg line='-profile @{profile}'/>
+            <arg value='@{descriptor}'/>
+            <arg value='@{approot}'/>
+            <extra-args/>
         </exec>
     </sequential>
 </macrodef>
